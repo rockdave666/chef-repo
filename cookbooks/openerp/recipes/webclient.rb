@@ -26,15 +26,16 @@ include_recipe "openerp::common"
   end
 end
 
-remote_file "#{Chef::Config['file_cache_path']}/openerp-web-#{node[:openerp][:version]}.tar.gz" do
+remote_file "/tmp/openerp-web.tar.gz" do
   source "http://www.openerp.com/download/stable/source/openerp-web-#{node[:openerp][:version]}.tar.gz"
   mode "0644"
 end
 
 bash "untar-openerp-server" do
   code <<-EOH
-  tar zxvf #{Chef::Config['file_cache_path']}/openerp-web-#{node[:openerp][:version]}.tar.gz -C /opt/openerp
+  tar zxvf /tmp/openerp-web.tar.gz -C /opt/openerp
   chown -R openerp: /opt/openerp/openerp-web-#{node[:openerp][:version]}
+  rm /tmp/openerp-web.tar.gz
   EOH
   not_if do File.exist?("/opt/openerp/openerp-web-#{node[:openerp][:version]}") &&
     File.directory?("/opt/openerp/openerp-web-#{node[:openerp][:version]}")

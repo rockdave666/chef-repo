@@ -25,15 +25,30 @@ e.run_action(:run)
 # Install the PostgreSQL client & server
 include_recipe "postgresql::client"
 include_recipe "postgresql::server"
+include_recipe "database::postgresql"
 
 # Create the OpenERP database role
-postgresql_role node[:openerp][:user] do
-  role node[:openerp][:user]
-  password node[:openerp][:password]
+postgresql_connection_info = {
+  :host     => '127.0.0.1',
+  :port     => node['postgresql']['config']['port'],
+  :username => 'postgres',
+  :password => node['postgresql']['password']['postgres']
+}
+
+postgresql_database 'openerp' do
+	connection postgresql_connection_info
   action :create
-  superuser true
-  createdb true
-  createrole true
-  inherit true
-  login true
+end
+
+postgresql_database_user node[:openerp][:user] do
+  connection postgresql_connection_info
+  password   node[:openerp][:password]
+  action     :create
+end
+
+postgresql_database_user node[:openerp][:user] do
+  connection    postgresql_connection_info
+  database_name 'openerp'
+  privileges    [:all]
+  action        :grant
 end
